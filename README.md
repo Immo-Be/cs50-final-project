@@ -1,3 +1,12 @@
+# Hamburg Airport 3D Visualization
+
+A 3D visualization project using Three.js, React Three Fiber, and Next.js.
+
+## Setup
+
+1. Install dependencies:
+```bash
+npm install
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
