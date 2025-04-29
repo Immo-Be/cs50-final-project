@@ -1,5 +1,6 @@
 import React from "react";
 import Earth from "./components/Earth";
+import Credits from "./components/Credits";
 import airports from "./airports.json" assert { type: "json" };
 
 // Define the FlightPath type
@@ -41,14 +42,21 @@ export type FlightPathData = {
 function convertFlightDataToFlightPath(
   flightDataRaw: FlightDataResponse,
 ): FlightPathData[] {
-  console.log("Flight Data Raw", flightDataRaw);
+  if (!flightDataRaw) {
+    return [];
+  }
+
+  // @ts-expect-error type is not correct
   return flightDataRaw.map((data) => {
+  // @ts-expect-error type is not correct
     if (!airports[data.originAirport3LCode]) {
-      return ;
+      return;
     }
+
     return {
       id: data.flightnumber,
       start: airports["HAM"],
+  // @ts-expect-error type is not correct
       destination: airports[data.originAirport3LCode],
       color: "#FF0000",
     };
@@ -62,7 +70,7 @@ export default async function Home() {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "Ocp-Apim-Subscription-Key": "ceed642d93bb4c51ae597948aa06b2c3",
+        "Ocp-Apim-Subscription-Key": `${process.env.API_HH_AIRPORT_KEY}`,
       },
     },
   );
@@ -71,5 +79,10 @@ export default async function Home() {
   // console.log(arrivals);
   console.log(convertFlightDataToFlightPath(arrivals));
   //
-  return <Earth flightPathsData={convertFlightDataToFlightPath(arrivals)} />;
+  return (
+    <>
+      <Earth flightPathsData={convertFlightDataToFlightPath(arrivals)} />
+      <Credits />
+    </>
+  );
 }
