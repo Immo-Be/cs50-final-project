@@ -1,20 +1,29 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, FunctionComponent } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import GUI from "lil-gui";
 
-import earthVertexShader from '../shaders/earth/vertex.glsl';
-import earthFragmentShader from '../shaders/earth/fragment.glsl';
+import earthVertexShader from "../shaders/earth/vertex.glsl";
+import earthFragmentShader from "../shaders/earth/fragment.glsl";
 
-import atmosphereVertexShader from '../shaders/atmosphere/vertex.glsl';
-import atmosphereFragmentShader from '../shaders/atmosphere/fragment.glsl';
+import atmosphereVertexShader from "../shaders/atmosphere/vertex.glsl";
+import atmosphereFragmentShader from "../shaders/atmosphere/fragment.glsl";
 
-const Earth = () => {
+import FlightPath from "./FlightPath";
+import { FlightPathData } from "../page";
 
+interface EarthProps {
+  flightPathsData: FlightPathData[];
+}
+
+const Earth: FunctionComponent<EarthProps> = ({ flightPathsData }) => {
+  console.log("Flight Paths Data", flightPathsData);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [scene, setScene] = useState<THREE.Scene | null>(null);
+  const earthRadius = 2; // Same as in your Earth component
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -27,6 +36,7 @@ const Earth = () => {
 
     // Scene
     const scene = new THREE.Scene();
+    setScene(scene);
 
     // Loaders
     const textureLoader = new THREE.TextureLoader();
@@ -43,7 +53,7 @@ const Earth = () => {
      */
     const earthParameters = {
       atmosphereDayColor: "#00aaff",
-      atmosphereTwilightColor: "#ff6600"
+      atmosphereTwilightColor: "#ff6600",
     };
 
     const earthDayTexture = textureLoader.load("/earth/day.jpg");
@@ -113,9 +123,7 @@ const Earth = () => {
       sunDirection.setFromSpherical(sunSpherical);
 
       // Debug
-      debugSun.position
-          .copy(sunDirection)
-          .multiplyScalar(5);
+      debugSun.position.copy(sunDirection).multiplyScalar(5);
 
       // Uniforms
       earthMaterial.uniforms.uSunDirection.value.copy(sunDirection);
@@ -126,23 +134,31 @@ const Earth = () => {
     const earth = new THREE.Mesh(earthGeometry, earthMaterial);
     scene.add(earth);
 
-    gui
-      .addColor(earthParameters, 'atmosphereDayColor')
-      .onChange(() => {
-        earthMaterial.uniforms.uAtmosphereDayColor.value.set(earthParameters.atmosphereDayColor);
-        atmosphereMaterial.uniforms.uAtmosphereDayColor.value.set(earthParameters.atmosphereDayColor);
-      });
+    gui.addColor(earthParameters, "atmosphereDayColor").onChange(() => {
+      earthMaterial.uniforms.uAtmosphereDayColor.value.set(
+        earthParameters.atmosphereDayColor,
+      );
+      atmosphereMaterial.uniforms.uAtmosphereDayColor.value.set(
+        earthParameters.atmosphereDayColor,
+      );
+    });
 
-    gui
-      .addColor(earthParameters, 'atmosphereTwilightColor')
-      .onChange(() => {
-        earthMaterial.uniforms.uAtmosphereTwilightColor.value.set(earthParameters.atmosphereTwilightColor);
-        atmosphereMaterial.uniforms.uAtmosphereTwilightColor.value.set(earthParameters.atmosphereTwilightColor);
-      });
+    gui.addColor(earthParameters, "atmosphereTwilightColor").onChange(() => {
+      earthMaterial.uniforms.uAtmosphereTwilightColor.value.set(
+        earthParameters.atmosphereTwilightColor,
+      );
+      atmosphereMaterial.uniforms.uAtmosphereTwilightColor.value.set(
+        earthParameters.atmosphereTwilightColor,
+      );
+    });
 
     // Tweaks
     gui.add(sunSpherical, "phi").min(0).max(Math.PI).onChange(updateSun);
-    gui.add(sunSpherical, "theta").min(-Math.PI).max(Math.PI).onChange(updateSun);
+    gui
+      .add(sunSpherical, "theta")
+      .min(-Math.PI)
+      .max(Math.PI)
+      .onChange(updateSun);
 
     /**
      * Sizes
@@ -207,10 +223,19 @@ const Earth = () => {
     const tick = () => {
       const elapsedTime = clock.getElapsedTime();
 
-      earth.rotation.y = elapsedTime * 0.1;
+      // earth.rotation.y = elapsedTime * 0.1;
 
       // Update controls
       controls.update();
+
+      // Update all shader-based flight path animations
+      // scene.children.forEach((child) => {
+      //   if (child.material && child.material.type === "ShaderMaterial") {
+      //     if ("uniforms" in child.material && child.material.uniforms.uTime) {
+      //       child.material.uniforms.uTime.value = elapsedTime;
+      //     }
+      //   }
+      // });
 
       // Render
       renderer.render(scene, camera);
@@ -223,15 +248,27 @@ const Earth = () => {
 
     return () => {
       // Cleanup
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       gui.destroy();
       renderer.dispose();
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="webgl" style={{ position: 'fixed', top: 0, left: 0, outline: 'none' }} />;
-return <div>tesrt</div>;
+  return (
+    <>
+      <canvas
+        ref={canvasRef}
+        className="webgl"
+        style={{ position: "fixed", top: 0, left: 0, outline: "none" }}
+      />
+      {/* Render FlightPath component with the scene */}
+      <FlightPath
+        paths={flightPathsData}
+        earthRadius={earthRadius}
+        scene={scene}
+      />
+    </>
+  );
 };
 
 export default Earth;
-
