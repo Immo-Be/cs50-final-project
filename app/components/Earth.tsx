@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, FunctionComponent } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import GUI from "lil-gui";
 
@@ -218,10 +218,10 @@ const Earth: FunctionComponent<EarthProps> = ({ flightPathsData }) => {
     /**
      * Animate
      */
-    const clock = new THREE.Clock();
+    // const clock = new THREE.Clock();
 
     const tick = () => {
-      const elapsedTime = clock.getElapsedTime();
+      // const elapsedTime = clock.getElapsedTime();
 
       // earth.rotation.y = elapsedTime * 0.1;
 
